@@ -21,43 +21,46 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require File.join(File.dirname(__FILE__), '..', 'spec_helper')
+require 'spec_helper'
 require 'command-t/scanner'
+require 'command-t/ext'
 
 describe CommandT::Matcher do
   describe 'initialization' do
-    it 'should raise an ArgumentError if passed nil' do
-      lambda { CommandT::Matcher.new nil }.
-        should raise_error(ArgumentError)
+    it 'raises an ArgumentError if passed nil' do
+      expect do
+        CommandT::Matcher.new nil
+      end.to raise_error(ArgumentError)
     end
   end
 
-  describe 'matches_for method' do
-    before :each do
-      @scanner = mock(CommandT::Scanner)
+  describe '#matches_for' do
+    before do
+      @scanner = Object.new
     end
 
-    it 'should raise an ArgumentError if passed nil' do
+    it 'raises an ArgumentError if passed nil' do
       @matcher = CommandT::Matcher.new @scanner
-      lambda { @matcher.matches_for(nil) }.
-        should raise_error(ArgumentError)
+      expect do
+        @matcher.matches_for(nil)
+      end.to raise_error(ArgumentError)
     end
 
-    it 'should return empty array when source array empty' do
-      @scanner.stub(:paths).and_return([])
+    it 'returns empty array when source array empty' do
+      stub(@scanner).paths { [] }
       @no_paths = CommandT::Matcher.new @scanner
       @no_paths.matches_for('foo').should == []
       @no_paths.matches_for('').should == []
     end
 
-    it 'should return empty array when no matches' do
-      @scanner.stub(:paths).and_return(['foo/bar', 'foo/baz', 'bing'])
+    it 'returns empty array when no matches' do
+      stub(@scanner).paths { ['foo/bar', 'foo/baz', 'bing'] }
       @no_matches = CommandT::Matcher.new @scanner
       @no_matches.matches_for('xyz').should == []
     end
 
-    it 'should return matching paths' do
-      @scanner.stub(:paths).and_return(['foo/bar', 'foo/baz', 'bing'])
+    it 'returns matching paths' do
+      stub(@scanner).paths { ['foo/bar', 'foo/baz', 'bing'] }
       @foo_paths = CommandT::Matcher.new @scanner
       matches = @foo_paths.matches_for('z')
       matches.map { |m| m.to_s }.should == ['foo/baz']
@@ -65,8 +68,8 @@ describe CommandT::Matcher do
       matches.map { |m| m.to_s }.should == ['bing']
     end
 
-    it 'should perform case-insensitive matching' do
-      @scanner.stub(:paths).and_return(['Foo'])
+    it 'performs case-insensitive matching' do
+      stub(@scanner).paths { ['Foo'] }
       @path = CommandT::Matcher.new @scanner
       matches = @path.matches_for('f')
       matches.map { |m| m.to_s }.should == ['Foo']

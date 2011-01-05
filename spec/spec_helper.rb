@@ -21,6 +21,18 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-unless $LOAD_PATH.include? './ruby'
-  $LOAD_PATH.unshift './ruby'
+if !Object.const_defined?('Bundler')
+  require 'rubygems'
+  require 'bundler'
+  Bundler.setup
+end
+require 'rspec'
+
+lib = File.expand_path('../ruby', File.dirname(__FILE__))
+unless $LOAD_PATH.include? lib
+  $LOAD_PATH.unshift lib
+end
+
+RSpec.configure do |config|
+  config.mock_framework = :rr
 end
